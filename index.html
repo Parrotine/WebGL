@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>THREE.JS interactive room</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="css/styles.css" />
+	</head>
+	<body>
+        
+        <!-- Step 1: Start the project -->
+        <div id="info" class="hidden">
+            Hello World!
+        </div>
+        <div id="logo">
+            <img src="img/hotel.png">
+        </div>
+        <div id="container"></div>
+        
+        <!-- Step 5: Start the code -->
+        <script src="js/three.min.js"></script>
+        <script>
+        
+            var camera, scene, renderer;
+            var isUserInteracting = false, onMouseDownMouseX = 0, onMouseDownMouseY = 0, lon = 0, onMouseDownLon = 0, lat = 0, onMouseDownLat = 0, phi = 0, theta = 0;
+            var mouse = new THREE.Vector2(), raycaster, INTERSECTED, hover = false, info;
+            
+            /* Step 7: Create the scene */
+            function init() {
+                var container, mesh;
+                info = document.getElementById( 'info' );
+                container = document.getElementById( 'container' );
+                camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
+                scene = new THREE.Scene();
+                
+                /* Step 8: Make the room */
+                var geometry = new THREE.SphereGeometry( 500, 60, 40 );
+                geometry.applyMatrix( new THREE.Matrix4().makeScale( -1, 1, 1 ) );
+                var material = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/room.jpg' ) } );
+                mesh = new THREE.Mesh( geometry, material );
+                scene.add( mesh );
+                
+                /* Step 9(?): Create another sphere */
+                geometry = new THREE.SphereGeometry( 70, 40, 40 );
+                material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+                for (i=0; i< area.length; i++){
+                    mesh = new THREE.Mesh( geometry, material );
+                    mesh.name = area[i];
+                    mesh.visible=false;
+                    scene.add( mesh );
+                    
+                    /* Step 10: Position each sphere */
+                    var phi2 = Math.acos( pos1[i] );
+                    var theta2 = Math.sqrt( Math.PI ) * pos2[i];
+                    
+                    mesh.position.x = 530 * Math.cos( theta2 ) * Math.sin( phi2 );
+                    mesh.position.y = 530 * Math.sin( theta2 ) * Math.sin( phi2 );
+                    mesh.position.z = 530 * Math.cos( phi2 );
+                }
+                
+                /* Step 11: Render the scene */
+                renderer = new THREE.WebGLRenderer();
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                container.appendChild( renderer.domElement );
+                
+                raycaster = new THREE.Raycaster();
+                
+                /* Step 12: Event Listeners */
+                document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+                document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+                document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+                window.addEventListener( 'resize', onWindowResize, false );
+                animate();
+            }
+            
+            /* Step 14: Press the mouse */
+            function onDocumentMouseDown( event ) {
+                event.preventDefault();
+                isUserInteracting = true;
+                onPointerDownPointerX = event.clientX;
+                onPointerDownPointerY = event.clientY;
+                
+                onPointerDownLon = lon;
+                onPointerDownLat = lat;
+            }
+            
+            /* Step 15: Move the scene */
+            function onDocumentMouseMove( event ) {
+                if ( isUserInteracting === true ) {
+                    lon = ( onPointerDownPointerX - event.clientX ) * 0.1 + onPointerDownLon;
+                    lat = ( event.clientY - onPointerDownPointerY ) * 0.1 + onPointerDownLat;
+                }
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                
+                info.style.top = event.clientY - 50 +"px";
+                info.style.left = event.clientX + 20 +"px";
+            }
+            
+            /* Step 16: Mouse released */
+            function onDocumentMouseUp( event ) {
+                isUserInteracting = false;
+            }
+            function animate() {
+                requestAnimationFrame( animate );
+                update();
+            }
+            
+            /* Step 17: Update the display */
+            function update() {
+                if ( hover == true || isUserInteracting == true ) {
+                    lon = lon;
+                } else {
+                    lon += 0.05;
+                }
+                
+                lat = Math.max( - 85, Math.min( 85, lat ) );
+                phi = THREE.Math.degToRad( 90 - lat );
+                theta = THREE.Math.degToRad( lon );
+                
+                /* Step 18: Update the camera target */
+                camera.target.x = 500 * Math.sin( phi ) * Math.cos( theta );
+                camera.target.y = 500 * Math.cos( phi );
+                camera.target.z = 500 * Math.sin( phi ) * Math.sin( theta );
+                
+                camera.lookAt( camera.target );
+                
+                /* Step 19: Shoot rays */
+                var vector = new THREE.Vector3( mouse.x, mouse.y, 1 ).unproject( camera );
+                raycaster.set( camera.position, vector.sub( camera.position ).normalize() );
+                var intersects = raycaster.intersectObjects( scene.children );
+                
+                if ( intersects.length > 0 ) {
+                    
+                    /* Step 20: Under the mouse */
+                    if ( INTERSECTED != intersects[ 0 ].object) {
+                        INTERSECTED = intersects[ 0 ].object;
+                        if (INTERSECTED.name == "ent"){
+                            hover = true;
+                            info.innerHTML = "Entertainment System";
+                            info.classList.remove('hidden');
+                            info.classList.add('visible');
+                        } /* Step 21: Check other objects */ 
+                        else if (INTERSECTED.name == "piano"){
+                            hover = true;
+                            info.innerHTML = "Piano";
+                            info.classList.remove('hidden');
+                            info.classList.add('visible');
+                        } else if (INTERSECTED.name == "table"){
+                            hover == true;
+                            info.innerHTML = "Drinks Service";
+                            info.classList.remove('hidden');
+                            info.classList.add('visible');
+                        } else if (INTERSECTED.name == "library"){
+                            hover = true;
+                            info.innerHTML = "Entertainment Library";
+                            info.classList.remove('hidden');
+                            info.classList.add('visible');
+                        } else {
+                            hover = false;
+                            info.classList.remove('visible');
+                            info.classList.add('hidden');
+                        }
+                    }
+                }
+                renderer.render( scene, camera );
+            }
+            
+        </script>
+	</body>
+</html>

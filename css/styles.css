@@ -1,0 +1,31 @@
+/* Step 2: Style these elements */
+body {
+    background-color: #000000;
+    margin: 0px;
+    overflow: hidden;
+}
+
+#logo {
+    position: absolute;
+    top: 0px; left: 0px;
+    width: 274px;
+}
+
+/* Step 3: Style the tool tip */
+#info {
+    position: absolute;
+    top: 0px; left: 0px;
+    width: 200px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 2px;
+    color: #fff;
+    padding: 5px;
+    font-family: Arial;
+    font-size: 18px;
+    text-align: center;
+}
+
+/* Step 4: Hide and show the tool tip */
+.hidden { visibility: hidden; }
+
+.visible { visibility: visible; }
